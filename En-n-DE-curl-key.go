@@ -79,7 +79,7 @@ func encryptData(in EncryptRequest) (EncryptedResponse, error) {
 
 	encryptedResponse := EncryptedResponse{} // var is a structure with Hash and Salt
 
-	// get key and iv, knowing the salt
+	// get key and iv (from createKeys func), using the Salt from received structure (EncryptRequest)
 	key, iv := createKeys(in.Salt)
 
 	// Initialize new crypter struct. Errors are ignored.
@@ -97,28 +97,32 @@ func encryptData(in EncryptRequest) (EncryptedResponse, error) {
 
 func handlerEcnrypt(w http.ResponseWriter, r *http.Request) {
 
-	encryptRequest := EncryptRequest{} // variable with EncryptRequest structure
+	encryptRequest := EncryptRequest{} // var with EncryptRequest structure (text/salt)
 
-	// created structure from received JSON in curl
+	// creates ^ structure from received JSON in curl - from Body of 'r'
+	// actually creates encryptRequest.Text and encryptRequest.Salt from 'r':
 	if err := json.NewDecoder(r.Body).Decode(&encryptRequest); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.Println(encryptRequest, "2", r.Body) // delete me
+		// log.Println(encryptRequest, "2", r.Body) // delete me
 		return
 	}
-	//
+
+	// sends the created var for encryption. As a result - returned the structure "EncryptedResponse" (hash/time),
+	// which is filled
 	encryptedResponse, err := encryptData(encryptRequest)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
+	// forming the JSON HTTP Response (w)
 	jsonEncrypt, err := json.Marshal(encryptedResponse)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
-	fmt.Fprintf(w, "%s", jsonEncrypt) // this is returns the Response on the same screen as curl was inserted
+	// Printing the JSON part of the HTTP response on the screen after the CURL
+	fmt.Fprintf(w, "%s", jsonEncrypt)
 }
 
 // Decrypt - this is  METHOD for the structure 'Crypter'
@@ -215,6 +219,8 @@ func handlerDecrypt(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "%s", jsonEncrypt)
 }
 
+// returning two strings by replacing first chars of hardcoded strings
+// with the received 'salt' string
 func createKeys(inSalt string) (key, iv string) {
 
 	// hardcoded, but better be imported from secret storage
@@ -225,16 +231,9 @@ func createKeys(inSalt string) (key, iv string) {
 	salt := inSalt
 
 	//replace first bytes of key and iv with SALT
-	x := len(salt)
-	// modify templates to trim first (len) bytes
-	// key := salt + keyTemplate[x:]
-	// iv := salt + ivTemplate[x:]
+	// x := len(salt)
 
-	// fmt.Println(keyBytes111, "len(x): ", x, "\nkeyTemplate: ", keyTemplate, "\nivTemplate: ", ivTemplate, "\nkeyBytes: ", keyBytes, "\nivBytes: ", ivBytes)
-
-	// fmt.Println("\nnewkey: ", key, "\nnew  iv: ", iv)
-
-	return salt + keyTemplate[x:], salt + ivTemplate[x:]
+	return salt + keyTemplate[len(salt):], salt + ivTemplate[len(salt):]
 }
 
 func main() {
