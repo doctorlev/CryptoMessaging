@@ -4,7 +4,7 @@ Solutions:
 2. reserved salt for the future
 3. cleaning
 
-Bugs:
+Bugs solved:
 1. if pass is empty - no pass check on decrypt operation (even 'salt=555' works)
 
 TBD:
