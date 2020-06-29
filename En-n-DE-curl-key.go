@@ -14,7 +14,7 @@ import (
 // EncryptRequest structure - for encryption
 type EncryptRequest struct {
 	Text string `json:"text"`
-	Salt string `json:"salt"`
+	Pass string `json:"pass"`
 }
 
 // EncryptedResponse structure -  will be inserted into formed O/G Request after encryption
@@ -26,7 +26,7 @@ type EncryptedResponse struct {
 // DecryptRequest structure - for encryption
 type DecryptRequest struct {
 	Hash string `json:"hash"`
-	Salt string `json:"salt"`
+	Pass string `json:"pass"`
 }
 
 // DecryptedResponse structure -  will be inserted into formed O/G Request after decryption
@@ -75,14 +75,15 @@ func (c *Crypter) Encrypt(input []byte) ([]byte, error) {
 }
 
 // Use this example: https://play.golang.org/p/r3VObSIB4o
+// return '(encrypted)Hash/Time' structure using received (Text/Pass) structure:
 func encryptData(in EncryptRequest) (EncryptedResponse, error) {
+	// var is a structure (with Hash and Time) to be returned
+	encryptedResponse := EncryptedResponse{}
 
-	encryptedResponse := EncryptedResponse{} // var is a structure with Hash and Salt
+	// get key and iv (from createKeys func), using the Pass from received structure (EncryptRequest)
+	key, iv := createKeys(in.Pass)
 
-	// get key and iv (from createKeys func), using the Salt from received structure (EncryptRequest)
-	key, iv := createKeys(in.Salt)
-
-	// Initialize new crypter struct. Errors are ignored.
+	// Initialize new crypter struct . Errors are ignored.
 	crypter, _ := NewCrypter([]byte(key), []byte(iv))
 
 	// Lets encode Text (from curl) using Encrypt method of Crypter structure (incl received Text).
@@ -97,10 +98,10 @@ func encryptData(in EncryptRequest) (EncryptedResponse, error) {
 
 func handlerEcnrypt(w http.ResponseWriter, r *http.Request) {
 
-	encryptRequest := EncryptRequest{} // var with EncryptRequest structure (text/salt)
+	encryptRequest := EncryptRequest{} // var with EncryptRequest structure (text/pass)
 
 	// creates ^ structure from received JSON in curl - from Body of 'r'
-	// actually creates encryptRequest.Text and encryptRequest.Salt from 'r':
+	// actually creates encryptRequest.Text and encryptRequest.Pass from 'r':
 	if err := json.NewDecoder(r.Body).Decode(&encryptRequest); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		// log.Println(encryptRequest, "2", r.Body) // delete me
@@ -162,10 +163,10 @@ func decryptData(in DecryptRequest) (DecryptedResponse, error) {
 
 	// get key and iv
 	// 1. hardcoded:
-	// key := []byte("1234567890ABCDEF1234567890ABCDEF") // - to insert here the logic of putting salt to 32-byte key
-	// iv := []byte("1234567890ABCDEF")                  // - can do the same for Salt
-	// 2. from func 'create key, iv with salt':
-	key, iv := createKeys(in.Salt)
+	// key := []byte("1234567890ABCDEF1234567890ABCDEF") // - to insert here the logic of putting pass to 32-byte key
+	// iv := []byte("1234567890ABCDEF")                  // - can do the same for pass
+	// 2. from func 'create key, iv with 'pass':
+	key, iv := createKeys(in.Pass)
 	// fmt.Println("1b --- key: ", key, "iv: ", iv) // remove me
 
 	// Initialize new crypter struct. Errors are ignored.
@@ -220,20 +221,20 @@ func handlerDecrypt(w http.ResponseWriter, r *http.Request) {
 }
 
 // returning two strings by replacing first chars of hardcoded strings
-// with the received 'salt' string
-func createKeys(inSalt string) (key, iv string) {
+// with the received 'pass' string
+func createKeys(inPass string) (key, iv string) {
 
 	// hardcoded, but better be imported from secret storage
 	keyTemplate := "1234567890ABCDEF1234567890ABCDEF" // 32-bytes
 	ivTemplate := "1234567890ABCDEF"                  // 16 bytes
 
-	//Salt
-	salt := inSalt
+	//Salt - TBD where to pass from or get from
+	//salt := inSalt
 
-	//replace first bytes of key and iv with SALT
-	// x := len(salt)
+	// password or passphrase
+	pass := inPass
 
-	return salt + keyTemplate[len(salt):], salt + ivTemplate[len(salt):]
+	return pass + keyTemplate[len(pass):], pass + ivTemplate[len(pass):]
 }
 
 func main() {
