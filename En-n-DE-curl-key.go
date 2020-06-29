@@ -155,17 +155,7 @@ func decryptData(in DecryptRequest) (DecryptedResponse, error) {
 	decryptedResponse := DecryptedResponse{} // var is a structure with Text and Time to response
 
 	stringInBytes, _ := base64.StdEncoding.DecodeString(in.Hash)
-	// fmt.Println("1a --- stringInBytes: ", stringInBytes, "\n", []byte(stringInBytes))
-	// if err != nil {
-	// 	fmt.Println("error:", err)
-	// 	return (EncryptedResponse, err)
-	// }
 
-	// get key and iv
-	// 1. hardcoded:
-	// key := []byte("1234567890ABCDEF1234567890ABCDEF") // - to insert here the logic of putting pass to 32-byte key
-	// iv := []byte("1234567890ABCDEF")                  // - can do the same for pass
-	// 2. from func 'create key, iv with 'pass':
 	key, iv := createKeys(in.Pass)
 	// fmt.Println("1b --- key: ", key, "iv: ", iv) // remove me
 
