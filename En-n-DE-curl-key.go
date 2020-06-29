@@ -157,15 +157,15 @@ func decryptData(in DecryptRequest) (DecryptedResponse, error) {
 	stringInBytes, _ := base64.StdEncoding.DecodeString(in.Hash)
 
 	key, iv := createKeys(in.Pass)
-	// fmt.Println("1b --- key: ", key, "iv: ", iv) // remove me
+	fmt.Println("1b --- key: ", key, "iv: ", iv) // remove me
 
 	// Initialize new crypter struct. Errors are ignored.
 	crypter, _ := NewCrypter([]byte(key), []byte(iv))
-	// fmt.Println("2--- crypter: ", crypter) // remove me
+	fmt.Println("2--- crypter: ", crypter) // remove me
 
 	// Decode. Should print same as what was received in 1st curl
 	decoded, _ := crypter.Decrypt([]byte(stringInBytes))
-	// fmt.Println("3--- decoded: ", decoded) // remove me
+	fmt.Println("3--- decoded: ", decoded) // remove me
 
 	// convert decoded bytes to (originl) string
 	decodedBytesToString := string(decoded[:])
@@ -186,13 +186,6 @@ func handlerDecrypt(w http.ResponseWriter, r *http.Request) {
 		log.Println(decryptRequest, "decrypt error", r.Body) // delete me
 		return
 	}
-
-	// Convert received string to bytes:
-	// stringInBytes, err := base64.StdEncoding.DecodeString(decryptRequest.Text)
-	// if err != nil {
-	// 	fmt.Println("error:", err)
-	// 	return
-	// }
 
 	// sending the 'decryptRequest' to decryptData function
 	decryptedResponse, err := decryptData(decryptRequest)
@@ -223,6 +216,7 @@ func createKeys(inPass string) (key, iv string) {
 
 	// password or passphrase
 	pass := inPass
+	fmt.Println("CrK --- key: ", pass)
 
 	return pass + keyTemplate[len(pass):], pass + ivTemplate[len(pass):]
 }
