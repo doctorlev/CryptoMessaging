@@ -108,6 +108,12 @@ func handlerEcnrypt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// return error for empty pass
+	if len(encryptRequest.Pass) == 0 {
+		fmt.Fprintf(w, "Invalid (empty) Pass value. Please enter the Pass")
+		return
+	}
+
 	// sends the created var for encryption. As a result - returned the structure "EncryptedResponse" (hash/time),
 	// which is filled
 	encryptedResponse, err := encryptData(encryptRequest)
@@ -216,7 +222,7 @@ func createKeys(inPass string) (key, iv string) {
 
 	// password or passphrase
 	pass := inPass
-	fmt.Println("CrK --- key: ", pass)
+	// fmt.Println("CrK --- key: ", pass)
 
 	return pass + keyTemplate[len(pass):], pass + ivTemplate[len(pass):]
 }
