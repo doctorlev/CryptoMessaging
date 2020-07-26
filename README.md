@@ -6,7 +6,7 @@ main file split to 'handlers' and main
 Adding uniTest: file handlers_test
 Fixed: handling empty text or password.
 Instructions to run the Unitest: 
-> go test -v E-n-D-CURL-w-Key_test.go
+> go test -v main_test.go
 Instructions to run functional (encrypt/decrypt) - see in Rel 1 below. 
 
 Rel 1.
